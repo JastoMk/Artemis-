@@ -28,7 +28,7 @@ The upstream Termux instructions use Git and CMake. Package installation and com
 
 ```sh
 pkg update
-pkg install git cmake clang make
+pkg install git cmake clang make libandroid-spawn
 ```
 
 Then obtain the upstream source:
