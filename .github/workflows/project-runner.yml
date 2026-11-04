@@ -1,0 +1,60 @@
+name: Project Runner
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 4 * * 1"
+permissions:
+  contents: read
+concurrency:
+  group: project-runner-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out project
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run available project checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p runner-report
+          {
+            echo "# Project Runner Report"
+            echo
+            echo "- Repository: ${GITHUB_REPOSITORY}"
+            echo "- Commit: ${GITHUB_SHA}"
+            echo "- UTC time: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            echo
+          } > runner-report/report.md
+          if [[ -f pyproject.toml ]]; then
+            python -m pip install --upgrade pip
+            python -m pip install -e .
+            if [[ -d tests ]]; then
+              python -m pip install pytest
+              python -m pytest -q
+              echo "- Python tests: passed" >> runner-report/report.md
+            else
+              echo "- Python tests: no tests directory found" >> runner-report/report.md
+            fi
+          elif [[ -f package.json ]]; then
+            node --version >> runner-report/report.md
+            npm --version >> runner-report/report.md
+            echo "- JavaScript project detected; dependency/test execution deferred until package scripts are reviewed." >> runner-report/report.md
+          else
+            echo "- Status: repository bootstrap required; no executable project manifest found." >> runner-report/report.md
+            echo "- No project code was executed." >> runner-report/report.md
+          fi
+      - name: Save runner report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-runner-report
+          path: runner-report/
+          if-no-files-found: ignore
+          retention-days: 7
