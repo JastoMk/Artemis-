@@ -44,6 +44,9 @@ jobs:
             else
               echo "- Python tests: no tests directory found" >> runner-report/report.md
             fi
+          elif [[ -f artemis.py ]]; then
+            python -m unittest discover -s tests -v
+            echo "- ARTEMIS local prototype tests: passed" >> runner-report/report.md
           elif [[ -f package.json ]]; then
             node --version >> runner-report/report.md
             npm --version >> runner-report/report.md
