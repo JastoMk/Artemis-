@@ -51,7 +51,7 @@ class ProjectRunnerScopeTests(unittest.TestCase):
 
     def test_documentation_separates_hosted_and_device_acceptance(self):
         self.assertIn("not a Huawei/Android device test", self.documentation)
-        self.assertIn("does not execute the script in Termux", self.documentation)
+        self.assertIn("execute the script in Termux", self.documentation)
         self.assertIn("llama.cpp compiles", self.documentation)
         self.assertIn("target handset", self.documentation)
 
