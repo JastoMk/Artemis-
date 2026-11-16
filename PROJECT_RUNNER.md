@@ -16,6 +16,7 @@ The workflow also runs on pull requests and pushes to `main`, plus a weekly sche
 - Runs `sh -n` against the optional Termux preflight script. This checks shell syntax on Ubuntu; it does **not** execute the script in Termux.
 - Runs the local ARTEMIS Python unit tests on hosted Linux.
 - Writes a run-scoped Markdown artifact and an always-run Actions summary, including the commit and validation scope.
+- Uses Node 24-compatible JavaScript action majors (`checkout@v7`, `setup-python@v7`, `upload-artifact@v7`) to avoid legacy Node 20 runtime warnings.
 
 ## What a successful run does not prove
 
