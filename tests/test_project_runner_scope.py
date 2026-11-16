@@ -56,5 +56,19 @@ class ProjectRunnerScopeTests(unittest.TestCase):
         self.assertIn("target handset", self.documentation)
 
 
+    def test_actions_use_node24_compatible_majors(self):
+        expected = (
+            "uses: actions/checkout@v7",
+            "uses: actions/setup-python@v7",
+            "uses: actions/upload-artifact@v7",
+        )
+        for pin in expected:
+            with self.subTest(pin=pin):
+                self.assertIn(pin, self.workflow)
+        self.assertNotIn("actions/checkout@v4", self.workflow)
+        self.assertNotIn("actions/setup-python@v5", self.workflow)
+        self.assertNotIn("actions/upload-artifact@v4", self.workflow)
+        self.assertIn("Node 24-compatible", self.documentation)
+
 if __name__ == "__main__":
     unittest.main()
