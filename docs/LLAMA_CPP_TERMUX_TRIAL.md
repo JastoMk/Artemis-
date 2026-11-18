@@ -18,7 +18,7 @@ From the ARTEMIS repository in Termux:
 sh scripts/termux_llama_preflight.sh
 ```
 
-This script is read-only. It reports architecture, Android release/model where available, memory, free storage and whether common build tools exist. It does not install, download, compile, or modify anything.
+This script is read-only. It reports kernel architecture, Android primary ABI and ABI list, Android release/model where available, memory, free storage and whether common build tools exist. The ABI properties help distinguish the Android app's supported native binaries from the kernel architecture alone. It does not install, download, compile, or modify anything.
 
 Save the output privately for the device test record. Do not commit device identifiers or other personal diagnostics to the public repository.
 
@@ -61,7 +61,7 @@ Do not infer performance from another phone. Do not use private trading credenti
 
 | Gate | Pass condition |
 |---|---|
-| Runtime | Termux and Python/CMake/Clang versions recorded |
+| Runtime | Termux and Python/CMake/Clang versions recorded, including Android ABI |
 | Build | Upstream CLI builds and reports its version |
 | Load | A small GGUF loads without process termination |
 | Inference | A short prompt completes repeatedly |
