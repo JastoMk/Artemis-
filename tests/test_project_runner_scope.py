@@ -5,6 +5,8 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW = ROOT / ".github" / "workflows" / "project-runner.yml"
 DOC = ROOT / "PROJECT_RUNNER.md"
+PREFLIGHT = ROOT / "scripts" / "termux_llama_preflight.sh"
+TRIAL_DOC = ROOT / "docs" / "LLAMA_CPP_TERMUX_TRIAL.md"
 
 
 class ProjectRunnerScopeTests(unittest.TestCase):
@@ -12,6 +14,8 @@ class ProjectRunnerScopeTests(unittest.TestCase):
     def setUpClass(cls):
         cls.workflow = WORKFLOW.read_text(encoding="utf-8")
         cls.documentation = DOC.read_text(encoding="utf-8")
+        cls.preflight = PREFLIGHT.read_text(encoding="utf-8")
+        cls.trial_documentation = TRIAL_DOC.read_text(encoding="utf-8")
 
     def test_job_name_describes_hosted_repository_validation(self):
         self.assertIn("  project-validation:", self.workflow)
@@ -55,7 +59,6 @@ class ProjectRunnerScopeTests(unittest.TestCase):
         self.assertIn("llama.cpp compiles", self.documentation)
         self.assertIn("target handset", self.documentation)
 
-
     def test_actions_use_node24_compatible_majors(self):
         expected = (
             "uses: actions/checkout@v7",
@@ -69,6 +72,16 @@ class ProjectRunnerScopeTests(unittest.TestCase):
         self.assertNotIn("actions/setup-python@v5", self.workflow)
         self.assertNotIn("actions/upload-artifact@v4", self.workflow)
         self.assertIn("Node 24-compatible", self.documentation)
+
+    def test_termux_preflight_reports_android_abis_without_side_effects(self):
+        self.assertIn("ro.product.cpu.abi", self.preflight)
+        self.assertIn("ro.product.cpu.abilist", self.preflight)
+        self.assertIn('getprop "$property"', self.preflight)
+        self.assertIn("read-only inventory", self.preflight.lower())
+        self.assertNotIn("pkg install", self.preflight)
+        self.assertNotIn("git clone", self.preflight)
+        self.assertIn("Android primary ABI and ABI list", self.trial_documentation)
+
 
 if __name__ == "__main__":
     unittest.main()
