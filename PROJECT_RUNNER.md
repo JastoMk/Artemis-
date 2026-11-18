@@ -18,6 +18,12 @@ The workflow also runs on pull requests and pushes to `main`, plus a weekly sche
 - Writes a run-scoped Markdown artifact and an always-run Actions summary, including the commit and validation scope.
 - Uses Node 24-compatible JavaScript action majors (`checkout@v7`, `setup-python@v7`, `upload-artifact@v7`) to avoid legacy Node 20 runtime warnings.
 
+## Read-only device inventory (manual Termux step)
+
+When run manually on the handset, `scripts/termux_llama_preflight.sh` reports the kernel architecture, Android primary ABI and ABI list, Android release/model, memory, free storage and available build tools. The ABI fields help identify the native Android binary target; they are collected with read-only `getprop` calls. The script does not install packages, download models, compile code or change device settings.
+
+The hosted runner checks only the script's shell syntax. It does not execute the inventory script or collect any handset information.
+
 ## What a successful run does not prove
 
 A green hosted run means only that the configured repository checks completed on that Linux runner. It does not prove:
