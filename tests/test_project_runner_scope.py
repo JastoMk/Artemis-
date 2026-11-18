@@ -58,6 +58,8 @@ class ProjectRunnerScopeTests(unittest.TestCase):
         self.assertIn("execute the script in Termux", self.documentation)
         self.assertIn("llama.cpp compiles", self.documentation)
         self.assertIn("target handset", self.documentation)
+        self.assertIn("Android primary ABI and ABI list", self.documentation)
+        self.assertIn("does not execute the inventory script", self.documentation)
 
     def test_actions_use_node24_compatible_majors(self):
         expected = (
