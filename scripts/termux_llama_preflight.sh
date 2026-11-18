@@ -20,6 +20,20 @@ if command -v getprop >/dev/null 2>&1; then
 else
   echo unavailable
 fi
+echo "Android ABI properties:"
+if command -v getprop >/dev/null 2>&1; then
+  for property in ro.product.cpu.abi ro.product.cpu.abilist; do
+    printf '%s: ' "$property"
+    value="$(getprop "$property" 2>/dev/null || true)"
+    if [ -n "$value" ]; then
+      echo "$value"
+    else
+      echo unavailable
+    fi
+  done
+else
+  echo "getprop unavailable"
+fi
 
 echo
 echo "Memory:"
