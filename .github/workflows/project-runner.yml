@@ -1,5 +1,7 @@
 name: Project Runner
 on:
+  pull_request:
+    branches: [main]
   push:
     branches: [main]
   workflow_dispatch:
@@ -11,14 +13,15 @@ concurrency:
   group: project-runner-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  health-check:
+  project-validation:
+    name: Hosted repository validation (not device health)
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - name: Check out project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - name: Run available project checks
@@ -27,26 +30,33 @@ jobs:
           set -euo pipefail
           mkdir -p runner-report
           {
-            echo "# Project Runner Report"
+            echo "# ARTEMIS — hosted repository validation"
             echo
             echo "- Repository: ${GITHUB_REPOSITORY}"
             echo "- Commit: ${GITHUB_SHA}"
+            echo "- Event: ${GITHUB_EVENT_NAME}"
             echo "- UTC time: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            echo "- Scope: hosted Linux repository checks only."
+            echo "- Not a live service, exchange, or Android-device/Termux health check."
             echo
           } > runner-report/report.md
+          if [[ -f scripts/termux_llama_preflight.sh ]]; then
+            sh -n scripts/termux_llama_preflight.sh
+            echo "- Termux preflight shell syntax: passed (host shell only; script not executed on target device)." >> runner-report/report.md
+          fi
           if [[ -f pyproject.toml ]]; then
             python -m pip install --upgrade pip
             python -m pip install -e .
             if [[ -d tests ]]; then
               python -m pip install pytest
               python -m pytest -q
-              echo "- Python tests: passed" >> runner-report/report.md
+              echo "- Python tests: passed on hosted Linux; target-device compatibility not tested." >> runner-report/report.md
             else
               echo "- Python tests: no tests directory found" >> runner-report/report.md
             fi
           elif [[ -f artemis.py ]]; then
             python -m unittest discover -s tests -v
-            echo "- ARTEMIS local prototype tests: passed" >> runner-report/report.md
+            echo "- ARTEMIS prototype tests: passed on hosted Linux; target-device compatibility not tested." >> runner-report/report.md
           elif [[ -f package.json ]]; then
             node --version >> runner-report/report.md
             npm --version >> runner-report/report.md
@@ -55,11 +65,23 @@ jobs:
             echo "- Status: repository bootstrap required; no executable project manifest found." >> runner-report/report.md
             echo "- No project code was executed." >> runner-report/report.md
           fi
+      - name: Publish validation summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## ARTEMIS — hosted repository validation"
+            echo "- Scope: hosted Linux repository checks only."
+            echo "- Not a live service, exchange, or Android-device/Termux health check."
+            echo "- Result: ${{ job.status }}"
+            echo "- Commit: ${GITHUB_SHA}"
+            echo "- Event: ${GITHUB_EVENT_NAME}"
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Save runner report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: project-runner-report
+          name: project-runner-report-${{ github.run_id }}-${{ github.run_attempt }}
           path: runner-report/
           if-no-files-found: ignore
           retention-days: 7
